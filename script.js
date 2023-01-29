@@ -5,24 +5,47 @@ const more = document.getElementById('more');
 
 const apiURL = 'https://api.lyrics.ovh/';
 
-function showData({ data }) {
+function showData(data) {
+  console.log(data);
   result.innerHTML = `
     <ul class="songs">
-      ${data
-        .map(
-          song => `<li>
-      <span><strong>${song.artist.name}</strong> - ${song.title}</span>
-      <button class="btn" data-artist="${song.artist.name}" data-songtitle="${song.title}">Get Lyrics</button>
-    </li>`
+      ${data.data
+        .map(song =>
+          `<li>
+            <span><strong>${song.artist.name}</strong> - ${song.title}</span>
+            <button class="btn" data-artist="${song.artist.name}" data-songtitle="${song.title}">Get Lyrics</button>
+          </li>`
         )
         .join('')}
     </ul>
   `;
+
+  if (data.prev || data.next) {
+    more.innerHTML = `
+      ${
+        data.prev
+          ? `<button class="btn" onclick="getMoreSongs('${data.prev}')">Prev</button>`
+          : ''
+      }
+      ${
+        data.next
+          ? `<button class="btn" onclick="getMoreSongs('${data.next}')">Next</button>`
+          : ''
+      }
+    `;
+  } else {
+    more.innerHTML = '';
+  }
+}
+
+async function getMoreSongs(url) {
+  const res = await fetch(`https://cors-anywhere.herokuapp.com/${url}`);
+  const data = await res.json();
+
+  showData(data);
 }
 
 async function searchSongs(searchTerm) {
-  console.log(searchTerm);
-
   const res = await fetch(apiURL + 'suggest/' + searchTerm);
   const data = await res.json();
   showData(data);
